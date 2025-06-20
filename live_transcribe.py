@@ -7,6 +7,9 @@ import tempfile
 import os
 import time
 from scipy.io.wavfile import write
+import requests
+
+
 
 # Config
 CHUNK_DURATION = 5  # seconds
@@ -19,6 +22,22 @@ q = queue.Queue()
 model = whisper.load_model(
     "base.en"
 )  # you can use "tiny", "small", "medium", "base", "large", "turbo"
+
+
+def ask_ollama(command_text, model="phi4"):
+    prompt = f"""
+"{command_text}"
+"""
+
+    response = requests.post(
+        "http://localhost:11434/api/generate",
+        json={"model": model, "prompt": prompt, "stream": False},
+        timeout=30
+    )
+
+    result = response.json()
+    reply = result.get("response", "").strip().lower()
+    return reply
 
 
 def audio_callback(indata, frames, time_info, status):
@@ -56,6 +75,9 @@ def transcribe_chunk(chunk):
                 idx = text.find(TRIGGER_WORD)
                 command = text[idx + len(TRIGGER_WORD):].strip()
                 print(f"🧠 Command detected: {command}")
+                answer = ask_ollama(command)
+                print(f"{answer=}")
+                os.system(f"say '{answer}'")
 
             print(result["text"])
         os.remove(f.name)
