@@ -3,6 +3,6 @@ import queue
 
 q = queue.Queue()
 
-for x in ["tiny", "small", "medium", "base", "large", "turbo"]:
+for x in ["tiny", "small.en", "medium", "base.en", "large", "turbo"]:
     print(f"loading {x}")
     model = whisper.load_model(x)

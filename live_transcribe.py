@@ -17,7 +17,7 @@ TRIGGER_WORD = "venus"
 
 q = queue.Queue()
 model = whisper.load_model(
-    "base"
+    "base.en"
 )  # you can use "tiny", "small", "medium", "base", "large", "turbo"
 
 
