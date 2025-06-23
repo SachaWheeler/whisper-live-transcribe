@@ -8,11 +8,11 @@ import os
 import time
 from scipy.io.wavfile import write
 import requests
-
+import re
 
 
 # Config
-CHUNK_DURATION = 5  # seconds
+CHUNK_DURATION = 7  # seconds
 SAMPLE_RATE = 16000  # Whisper expects 16kHz audio
 CHANNELS = 1
 
@@ -32,7 +32,7 @@ def ask_ollama(command_text, model="phi4"):
     response = requests.post(
         "http://localhost:11434/api/generate",
         json={"model": model, "prompt": prompt, "stream": False},
-        timeout=30
+        timeout=120
     )
 
     result = response.json()
@@ -71,15 +71,16 @@ def transcribe_chunk(chunk):
         result = model.transcribe(f.name, fp16=False)
         text = result['text'].lower()
         if text != "":
+            print(f"> {text}")
             if TRIGGER_WORD in text:
                 idx = text.find(TRIGGER_WORD)
-                command = text[idx + len(TRIGGER_WORD):].strip()
-                print(f"🧠 Command detected: {command}")
-                answer = ask_ollama(command)
-                print(f"{answer=}")
+                command = text[idx + len(TRIGGER_WORD):].lstrip(", ")
+                print(f"🧠 Processing: {command}")
+                response = ask_ollama(command)
+                answer = re.sub(r'\\.', ' ', response)
+                # print(f"{answer=}")
                 os.system(f"say '{answer}'")
 
-            print(result["text"])
         os.remove(f.name)
 
 
