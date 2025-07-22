@@ -31,8 +31,14 @@ def ask_ollama(command_text, model="phi4"):
 
     response = requests.post(
         "http://localhost:11434/api/generate",
-        json={"model": model, "prompt": prompt, "stream": False},
-        timeout=120
+        # json={"model": model, "prompt": prompt, "stream": False, "think": False},
+        json={
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            # "think": False,
+        },
+        timeout=120,
     )
 
     result = response.json()
@@ -69,15 +75,15 @@ def transcribe_chunk(chunk):
         write(f.name, SAMPLE_RATE, chunk)
         # print(f"\n🔍 Transcribing chunk...")
         result = model.transcribe(f.name, fp16=False)
-        text = result['text'].lower()
+        text = result["text"].lower()
         if text != "":
             print(f"> {text}")
             if TRIGGER_WORD in text:
                 idx = text.find(TRIGGER_WORD)
-                command = text[idx + len(TRIGGER_WORD):].lstrip(", ")
+                command = text[idx + len(TRIGGER_WORD) :].lstrip(", ")
                 print(f"🧠 Processing: {command}")
                 response = ask_ollama(command)
-                answer = re.sub(r'\\.', ' ', response)
+                answer = re.sub(r"\\.", " ", response)
                 # print(f"{answer=}")
                 os.system(f"say '{answer}'")
 
