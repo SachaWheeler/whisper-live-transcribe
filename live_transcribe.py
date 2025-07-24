@@ -5,7 +5,6 @@ import queue
 import threading
 import tempfile
 import os
-import time
 from scipy.io.wavfile import write
 import requests
 import re
